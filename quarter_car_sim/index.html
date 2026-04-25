@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quarter Car Suspension Simulation</title>
+    <style>
+        :root {
+            --primary: #007bff;
+            --bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --border: #dee2e6;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            height: 100vh;
+            margin: 0;
+            background-color: var(--bg);
+            color: var(--text);
+            overflow: hidden;
+        }
+        .sidebar {
+            width: 320px;
+            background: var(--card-bg);
+            border-right: 1px solid var(--border);
+            padding: 20px;
+            overflow-y: auto;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+            z-index: 10;
+        }
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+        }
+        h1 {
+            font-size: 1.2rem;
+            margin: 0 0 20px 0;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .control-group {
+            margin-bottom: 18px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        label {
+            display: block;
+            font-size: 0.85em;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .val-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+        .value {
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+            color: var(--primary);
+            background: #e7f1ff;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        input[type="range"] {
+            width: 100%;
+            cursor: pointer;
+        }
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        button {
+            padding: 12px;
+            cursor: pointer;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button#resetBtn {
+            background-color: #6c757d;
+        }
+        button#resetBtn:hover {
+            background-color: #5a6268;
+        }
+        button.speed-btn {
+            background-color: #e9ecef;
+            color: #495057;
+            font-size: 0.8em;
+        }
+        button.speed-btn.active {
+            background-color: var(--primary);
+            color: white;
+        }
+        canvas {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            max-width: 100%;
+        }
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9em;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+        .checkbox-group input {
+            width: 18px;
+            height: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h1>Suspension Sim</h1>
+        
+        <div class="control-group">
+            <div class="val-container">
+                <label>Sprung Mass (ms)</label>
+                <span id="msVal" class="value">300</span>
+            </div>
+            <input type="range" id="ms" min="100" max="1000" value="300">
+        </div>
+
+        <div class="control-group">
+            <div class="val-container">
+                <label>Unsprung Mass (mu)</label>
+                <span id="muVal" class="value">40</span>
+            </div>
+            <input type="range" id="mu" min="10" max="100" value="40">
+        </div>
+
+        <div class="control-group">
+            <div class="val-container">
+                <label>Suspension Stiffness (ks)</label>
+                <span id="ksVal" class="value">20000</span>
+            </div>
+            <input type="range" id="ks" min="5000" max="100000" value="20000">
+        </div>
+
+        <div class="control-group">
+            <div class="val-container">
+                <label>Suspension Damping (cs)</label>
+                <span id="csVal" class="value">1500</span>
+            </div>
+            <input type="range" id="cs" min="100" max="10000" value="1500">
+        </div>
+
+        <div class="control-group">
+            <div class="val-container">
+                <label>Tire Stiffness (kt)</label>
+                <span id="ktVal" class="value">200000</span>
+            </div>
+            <input type="range" id="kt" min="50000" max="500000" value="200000">
+        </div>
+
+        <div class="control-group">
+            <div class="val-container">
+                <label>Tire Damping (ct)</label>
+                <span id="ctVal" class="value">1000</span>
+            </div>
+            <input type="range" id="ct" min="0" max="5000" value="1000">
+        </div>
+
+        <div class="control-group">
+            <div class="val-container">
+                <label>Road Frequency</label>
+                <span id="freqVal" class="value">0</span>
+            </div>
+            <input type="range" id="freq" min="0" max="20" step="0.1" value="0">
+        </div>
+
+        <div class="control-group">
+            <div class="val-container">
+                <label>Road Amplitude</label>
+                <span id="ampVal" class="value">0.05</span>
+            </div>
+            <input type="range" id="amp" min="0" max="0.2" step="0.01" value="0.05">
+        </div>
+
+        <div class="checkbox-group">
+            <input type="checkbox" id="showTraces" checked>
+            <label for="showTraces" style="margin:0">Master Trace Toggle</label>
+        </div>
+
+        <div class="control-group" style="margin-top:20px">
+            <label>Simulation Speed</label>
+            <div id="speedButtons" class="button-group" style="grid-template-columns: repeat(4, 1fr); gap: 5px;">
+                <button class="speed-btn" data-speed="0" style="padding: 8px 0;">ll</button>
+                <button class="speed-btn" data-speed="0.25" style="padding: 8px 0;">.25</button>
+                <button class="speed-btn" data-speed="0.5" style="padding: 8px 0;">.5</button>
+                <button class="speed-btn active" data-speed="1.0" style="padding: 8px 0;">1x</button>
+            </div>
+        </div>
+
+        <div style="margin-top: 20px; border-top: 1px solid var(--border); padding-top: 10px;">
+            <label style="font-size: 0.75rem; color: #888; text-transform: uppercase;">Active Graphs</label>
+            <div class="checkbox-group">
+                <input type="checkbox" id="trace-xs" checked>
+                <label for="trace-xs" style="color: #007bff">Body Disp.</label>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="trace-xu" checked>
+                <label for="trace-xu" style="color: #333">Tire Disp.</label>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="trace-trav">
+                <label for="trace-trav" style="color: #28a745">Susp. Travel</label>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="trace-vel">
+                <label for="trace-vel" style="color: #fd7e14">Rel. Velocity</label>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button id="bumpBtn">Single Bump</button>
+            <button id="resetBtn">Reset</button>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <canvas id="simCanvas" width="900" height="500"></canvas>
+    </div>
+
+    <script src="sim.js"></script>
+</body>
+</html>
