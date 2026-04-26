@@ -3,244 +3,231 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quarter Car Suspension Simulation</title>
+    <title>Suspension Studio Pro</title>
     <style>
         :root {
             --primary: #007bff;
+            --primary-hover: #0056b3;
             --bg: #f8f9fa;
             --card-bg: #ffffff;
-            --text: #333;
+            --sidebar-bg: #ffffff;
+            --text-main: #212529;
+            --text-dim: #6c757d;
             --border: #dee2e6;
+            --accent: #007bff;
         }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Inter', -apple-system, sans-serif;
             display: flex;
             height: 100vh;
             margin: 0;
             background-color: var(--bg);
-            color: var(--text);
+            color: var(--text-main);
             overflow: hidden;
         }
-        .sidebar {
-            width: 320px;
-            background: var(--card-bg);
-            border-right: 1px solid var(--border);
-            padding: 20px;
-            overflow-y: auto;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.05);
-            z-index: 10;
-        }
-        .main-content {
-            flex-grow: 1;
+
+        /* Tabs Navigation */
+        .tabs-nav {
+            width: 60px;
+            background: #343a40;
             display: flex;
             flex-direction: column;
             align-items: center;
+            padding: 20px 0;
+            border-right: 1px solid var(--border);
+        }
+        .tab-icon {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
             justify-content: center;
-            padding: 20px;
-            position: relative;
-        }
-        h1 {
+            cursor: pointer;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            color: var(--text-dim);
+            transition: all 0.2s;
             font-size: 1.2rem;
-            margin: 0 0 20px 0;
-            color: var(--primary);
-            text-transform: uppercase;
-            letter-spacing: 1px;
         }
-        .control-group {
-            margin-bottom: 18px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #f0f0f0;
-        }
-        label {
-            display: block;
-            font-size: 0.85em;
-            margin-bottom: 8px;
-            font-weight: 600;
-        }
-        .val-container {
+        .tab-icon:hover { background: var(--border); color: #fff; }
+        .tab-icon.active { background: var(--primary); color: #fff; }
+
+        /* Sidebar content */
+        .sidebar {
+            width: 300px;
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border);
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 4px;
+            flex-direction: column;
+            padding: 20px;
+            overflow-y: auto;
         }
-        .value {
-            font-family: 'Courier New', Courier, monospace;
-            font-weight: bold;
-            color: var(--primary);
-            background: #e7f1ff;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 0.9em;
-        }
-        input[type="range"] {
-            width: 100%;
-            cursor: pointer;
-        }
-        .button-group {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-top: 20px;
-        }
-        button {
-            padding: 12px;
-            cursor: pointer;
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-weight: 600;
-            transition: background 0.2s;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        button#resetBtn {
-            background-color: #6c757d;
-        }
-        button#resetBtn:hover {
-            background-color: #5a6268;
-        }
-        button.speed-btn {
-            background-color: #e9ecef;
-            color: #495057;
-            font-size: 0.8em;
-        }
-        button.speed-btn.active {
-            background-color: var(--primary);
-            color: white;
-        }
-        canvas {
-            background-color: white;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            max-width: 100%;
-        }
-        .checkbox-group {
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        h1 { font-size: 1rem; text-transform: uppercase; letter-spacing: 2px; color: var(--accent); margin: 0 0 25px 0; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        h2 { font-size: 0.8rem; text-transform: uppercase; color: var(--text-dim); margin: 20px 0 10px 0; }
+
+        /* Controls styling */
+        .control-group { margin-bottom: 15px; background: var(--card-bg); padding: 12px; border-radius: 8px; border: 1px solid var(--border); }
+        .val-container { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.85rem; }
+        .value { color: var(--accent); font-family: monospace; font-weight: bold; }
+        input[type="range"] { width: 100%; height: 4px; background: var(--border); border-radius: 2px; outline: none; }
+        
+        /* Table styling */
+        table { width: 100%; color: var(--text-main); font-size: 0.8rem; border-collapse: collapse; }
+        th { text-align: left; color: var(--text-dim); padding-bottom: 10px; }
+        td { padding: 5px 0; }
+        input[type="number"], input[type="text"] { background: #fff; border: 1px solid var(--border); color: #000; padding: 4px; border-radius: 4px; }
+
+        /* Main Area */
+        .main-content { flex-grow: 1; display: flex; flex-direction: column; position: relative; }
+        #canvas-wrapper { flex-grow: 1; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        canvas { background: #fff; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 1px solid var(--border); }
+
+        /* Bottom Toolbar */
+        .toolbar {
+            height: 60px;
+            background: var(--sidebar-bg);
+            border-top: 1px solid var(--border);
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 0.9em;
-            font-weight: 600;
-            margin-top: 10px;
+            padding: 0 30px;
+            gap: 20px;
         }
-        .checkbox-group input {
-            width: 18px;
-            height: 18px;
-        }
+
+        button { background: var(--primary); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.85rem; }
+        button:hover { background: var(--primary-hover); }
+        button:disabled { opacity: 0.5; }
+        button.secondary { background: var(--border); }
+        button.danger { background: #ef4444; }
+
+        .speed-btn-group { display: flex; background: var(--bg); padding: 3px; border-radius: 8px; border: 1px solid var(--border); }
+        .speed-btn { background: transparent; padding: 5px 12px; font-size: 0.75rem; border-radius: 6px; }
+        .speed-btn.active { background: var(--primary); }
+
+        .check-item { display: flex; align-items: center; gap: 10px; font-size: 0.85rem; margin-bottom: 8px; }
     </style>
 </head>
 <body>
+    <div class="tabs-nav">
+        <div class="tab-icon active" data-tab="vehicle" title="Vehicle Setup">🚗</div>
+        <div class="tab-icon" data-tab="road" title="Road Profile">🛣️</div>
+        <div class="tab-icon" data-tab="control" title="Active Control">➰</div>
+        <div class="tab-icon" data-tab="analysis" title="Analysis & Recording">📊</div>
+        <div class="tab-icon" data-tab="presets" title="Library">💾</div>
+    </div>
+
     <div class="sidebar">
-        <h1>Suspension Sim</h1>
-        
-        <div class="control-group">
-            <div class="val-container">
-                <label>Sprung Mass (ms)</label>
-                <span id="msVal" class="value">300</span>
+        <!-- Vehicle Tab -->
+        <div id="tab-vehicle" class="tab-content active">
+            <h1>Vehicle</h1>
+            <div class="control-group">
+                <div class="val-container"><label>Sprung Mass (ms)</label><span id="msVal" class="value">300</span></div>
+                <input type="range" id="ms" min="100" max="1000" value="300">
             </div>
-            <input type="range" id="ms" min="100" max="1000" value="300">
-        </div>
-
-        <div class="control-group">
-            <div class="val-container">
-                <label>Unsprung Mass (mu)</label>
-                <span id="muVal" class="value">40</span>
+            <div class="control-group">
+                <div class="val-container"><label>Unsprung Mass (mu)</label><span id="muVal" class="value">40</span></div>
+                <input type="range" id="mu" min="10" max="100" value="40">
             </div>
-            <input type="range" id="mu" min="10" max="100" value="40">
-        </div>
-
-        <div class="control-group">
-            <div class="val-container">
-                <label>Suspension Stiffness (ks)</label>
-                <span id="ksVal" class="value">20000</span>
+            <h2>Suspension</h2>
+            <div class="control-group">
+                <div class="val-container"><label>Stiffness (ks)</label><span id="ksVal" class="value">20000</span></div>
+                <input type="range" id="ks" min="5000" max="100000" value="20000">
             </div>
-            <input type="range" id="ks" min="5000" max="100000" value="20000">
-        </div>
-
-        <div class="control-group">
-            <div class="val-container">
-                <label>Suspension Damping (cs)</label>
-                <span id="csVal" class="value">1500</span>
+            <div class="control-group">
+                <div class="val-container"><label>Damping (cs)</label><span id="csVal" class="value">1500</span></div>
+                <input type="range" id="cs" min="100" max="10000" value="1500">
             </div>
-            <input type="range" id="cs" min="100" max="10000" value="1500">
-        </div>
-
-        <div class="control-group">
-            <div class="val-container">
-                <label>Tire Stiffness (kt)</label>
-                <span id="ktVal" class="value">200000</span>
+            <h2>Tire</h2>
+            <div class="control-group">
+                <div class="val-container"><label>Stiffness (kt)</label><span id="ktVal" class="value">200000</span></div>
+                <input type="range" id="kt" min="50000" max="500000" value="200000">
             </div>
-            <input type="range" id="kt" min="50000" max="500000" value="200000">
-        </div>
-
-        <div class="control-group">
-            <div class="val-container">
-                <label>Tire Damping (ct)</label>
-                <span id="ctVal" class="value">1000</span>
-            </div>
-            <input type="range" id="ct" min="0" max="5000" value="1000">
-        </div>
-
-        <div class="control-group">
-            <div class="val-container">
-                <label>Road Frequency</label>
-                <span id="freqVal" class="value">0</span>
-            </div>
-            <input type="range" id="freq" min="0" max="20" step="0.1" value="0">
-        </div>
-
-        <div class="control-group">
-            <div class="val-container">
-                <label>Road Amplitude</label>
-                <span id="ampVal" class="value">0.05</span>
-            </div>
-            <input type="range" id="amp" min="0" max="0.2" step="0.01" value="0.05">
-        </div>
-
-        <div class="checkbox-group">
-            <input type="checkbox" id="showTraces" checked>
-            <label for="showTraces" style="margin:0">Master Trace Toggle</label>
-        </div>
-
-        <div class="control-group" style="margin-top:20px">
-            <label>Simulation Speed</label>
-            <div id="speedButtons" class="button-group" style="grid-template-columns: repeat(4, 1fr); gap: 5px;">
-                <button class="speed-btn" data-speed="0" style="padding: 8px 0;">ll</button>
-                <button class="speed-btn" data-speed="0.25" style="padding: 8px 0;">.25</button>
-                <button class="speed-btn" data-speed="0.5" style="padding: 8px 0;">.5</button>
-                <button class="speed-btn active" data-speed="1.0" style="padding: 8px 0;">1x</button>
+            <div class="control-group">
+                <div class="val-container"><label>Damping (ct)</label><span id="ctVal" class="value">1000</span></div>
+                <input type="range" id="ct" min="0" max="5000" value="1000">
             </div>
         </div>
 
-        <div style="margin-top: 20px; border-top: 1px solid var(--border); padding-top: 10px;">
-            <label style="font-size: 0.75rem; color: #888; text-transform: uppercase;">Active Graphs</label>
-            <div class="checkbox-group">
-                <input type="checkbox" id="trace-xs" checked>
-                <label for="trace-xs" style="color: #007bff">Body Disp.</label>
+        <!-- Road Tab -->
+        <div id="tab-road" class="tab-content">
+            <h1>Road Profile</h1>
+            <table style="margin-bottom: 20px;">
+                <thead><tr><th>On</th><th>Freq (Hz)</th><th>Amp (cm)</th><th></th></tr></thead>
+                <tbody id="roadTableBody"></tbody>
+            </table>
+            <button id="addRoadInput" style="width:100%" class="secondary">+ Add Frequency</button>
+            <h2 style="margin-top:30px">Events</h2>
+            <button id="bumpBtn" style="width:100%">Trigger Single Bump</button>
+        </div>
+
+        <!-- Control Tab -->
+        <div id="tab-control" class="tab-content">
+            <h1>Active Control</h1>
+            <div class="check-item">
+                <input type="checkbox" id="activeDamping"> <label>Position-Based Damping</label>
             </div>
-            <div class="checkbox-group">
-                <input type="checkbox" id="trace-xu" checked>
-                <label for="trace-xu" style="color: #333">Tire Disp.</label>
-            </div>
-            <div class="checkbox-group">
-                <input type="checkbox" id="trace-trav">
-                <label for="trace-trav" style="color: #28a745">Susp. Travel</label>
-            </div>
-            <div class="checkbox-group">
-                <input type="checkbox" id="trace-vel">
-                <label for="trace-vel" style="color: #fd7e14">Rel. Velocity</label>
+            <div id="activeControls" style="display:none; margin-top:20px;">
+                <div class="control-group">
+                    <div class="val-container"><label>Gain</label><span id="posGainVal" class="value">0</span></div>
+                    <input type="range" id="posGain" min="0" max="100000" step="1000" value="0">
+                </div>
+                <div class="control-group">
+                    <div class="val-container"><label>Null Point</label><span id="nullPointVal" class="value">0</span></div>
+                    <input type="range" id="nullPoint" min="-0.1" max="0.1" step="0.001" value="0">
+                </div>
+                <button id="setZeroBtn" style="width:100%" class="secondary">Calibrate Null at Current</button>
             </div>
         </div>
 
-        <div class="button-group">
-            <button id="bumpBtn">Single Bump</button>
-            <button id="resetBtn">Reset</button>
+        <!-- Analysis Tab -->
+        <div id="tab-analysis" class="tab-content">
+            <h1>Analysis</h1>
+            <div class="check-item"><input type="checkbox" id="showTraces" checked> <label>Master Trace View</label></div>
+            <h2>Graphs</h2>
+            <div class="check-item"><input type="checkbox" id="trace-xs" checked> <label style="color:#38bdf8">Body Disp.</label></div>
+            <div class="check-item"><input type="checkbox" id="trace-xu" checked> <label style="color:#94a3b8">Tire Disp.</label></div>
+            <div class="check-item"><input type="checkbox" id="trace-trav"> <label style="color:#4ade80">Susp. Travel</label></div>
+            <div class="check-item"><input type="checkbox" id="trace-vel"> <label style="color:#fb923c">Rel. Velocity</label></div>
+            
+            <h2 style="margin-top:30px">Data Recorder</h2>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                <button id="recordBtn" class="danger">Record</button>
+                <button id="stopRecordBtn" class="secondary" disabled>Stop</button>
+            </div>
+            <div id="recordingsList" style="margin-top:15px; border-top:1px solid var(--border); padding-top:10px;"></div>
+        </div>
+
+        <!-- Presets Tab -->
+        <div id="tab-presets" class="tab-content">
+            <h1>Library</h1>
+            <div style="display:flex; gap:10px; margin-bottom: 20px;">
+                <input type="text" id="configName" placeholder="New Preset..." style="flex-grow:1">
+                <button id="saveBtn">Save</button>
+            </div>
+            <div id="presetsList"></div>
+            <h2 style="margin-top:30px">Transfer</h2>
+            <button id="exportBtn" style="width:100%; margin-bottom:10px;" class="secondary">Copy JSON to Clipboard</button>
+            <button id="importBtn" style="width:100%" class="secondary">Import JSON</button>
         </div>
     </div>
 
     <div class="main-content">
-        <canvas id="simCanvas" width="900" height="500"></canvas>
+        <div id="canvas-wrapper">
+            <canvas id="simCanvas" width="1000" height="600"></canvas>
+        </div>
+        <div class="toolbar">
+            <button id="resetBtn" class="danger">Reset Simulation</button>
+            <div style="flex-grow: 1;"></div>
+            <span style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase;">Speed</span>
+            <div class="speed-btn-group">
+                <button class="speed-btn" data-speed="0">PAUSE</button>
+                <button class="speed-btn" data-speed="0.25">0.25x</button>
+                <button class="speed-btn" data-speed="0.5">0.5x</button>
+                <button class="speed-btn active" data-speed="1.0">1.0x</button>
+            </div>
+        </div>
     </div>
 
     <script src="sim.js"></script>
